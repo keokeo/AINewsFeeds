@@ -1,0 +1,68 @@
+# AI 新闻采集系统配置文件
+
+# RSS 资讯源列表
+rss_sources:
+  # 海外媒体
+  - name: TechCrunch AI专区
+    url: https://techcrunch.com/category/artificial-intelligence/feed/
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+  - name: Wired
+    url: https://www.wired.com/feed/rss
+  - name: TechCrunch 全站
+    url: https://feeds.feedburner.com/TechCrunch/
+  - name: MIT AI新闻
+    url: https://news.mit.edu/topic/artificial-intelligence2/feed
+
+  # 国内媒体
+  - name: Solidot 奇客资讯
+    url: https://www.solidot.org/index.rss
+  - name: 36氪
+    url: https://36kr.com/feed
+  - name: 极客公园
+    url: https://www.geekpark.net/rss
+  - name: 爱范儿
+    url: https://www.ifanr.com/feed
+  - name: 量子位
+    url: https://www.qbitai.com/rss
+  - name: 机器之心
+    url: https://www.jiqizhixin.com/rss
+  - name: 少数派
+    url: https://sspai.com/feed
+
+# 采集设置
+fetch:
+  # 抓取过去多少小时内的新闻
+  hours_ago: 48
+  # 每条新闻摘要的最大长度（字符）
+  max_summary_length: 500
+  # 最多传给 AI 分析的新闻数量
+  max_news_for_ai: 15
+  # 请求超时时间（秒）
+  timeout: 10
+  # 失败重试次数
+  max_retries: 3
+
+# AI 模型设置
+ai:
+  # 模型名称（火山引擎使用 Endpoint ID）
+  model_name: ark-code-latest
+  # 温度参数（0-1，越高越有创意）
+  temperature: 0.7
+  # 系统提示词
+  system_prompt: 你是一个资深的 AI 科技主编，熟练掌握微信公众号和小红书的爆款写作技巧。
+
+# 输出设置
+output:
+  # 存档目录
+  archive_dir: archive
+  # 文件名格式
+  filename_format: AINews_{timestamp}.md
+
+# 推送设置
+push:
+  # 是否推送到飞书
+  feishu_enabled: true
+  # 是否推送到其他平台（预留）
+  wechat_enabled: false
+  dingtalk_enabled: false

@@ -140,8 +140,21 @@ if __name__ == "__main__":
     
     # RSS 资讯源列表（以海外和国内著名的科技媒体为例）
     rss_sources = [
-         "https://techcrunch.com/category/artificial-intelligence/feed/", # TechCrunch AI专区
-         "https://www.solidot.org/index.rss", # Solidot 奇客资讯
+        # 海外媒体
+        "https://techcrunch.com/category/artificial-intelligence/feed/", # TechCrunch AI专区
+        "https://www.theverge.com/rss/index.xml", # The Verge
+        "https://www.wired.com/feed/rss", # Wired
+        "https://feeds.feedburner.com/TechCrunch/", # TechCrunch 全站
+        "https://news.mit.edu/topic/artificial-intelligence2/feed", # MIT AI新闻
+        
+        # 国内媒体
+        "https://www.solidot.org/index.rss", # Solidot 奇客资讯
+        "https://36kr.com/feed", # 36氪
+        "https://www.geekpark.net/rss", # 极客公园
+        "https://www.ifanr.com/feed", # 爱范儿
+        "https://www.qbitai.com/rss", # 量子位
+        "https://www.jiqizhixin.com/rss", # 机器之心
+        "https://sspai.com/feed", # 少数派
     ]
     
     # 第一步：抓取网页数据
