@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine, SessionLocal
 from models import Base, RssSource, SystemConfig
 from routers import rss, settings, tasks
+from scheduler import scheduler, load_schedule_from_db
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +103,9 @@ def seed_system_config(config_path: str = "config.yaml"):
             # 输出设置
             ("output_archive_dir", output_config.get("archive_dir", "archive"), "output", "本地存档目录"),
             ("output_filename_format", output_config.get("filename_format", "AINews_{timestamp}.md"), "output", "存档文件名格式"),
+            # 定时任务设置
+            ("schedule_enabled", "False", "schedule", "是否启用定时采集"),
+            ("schedule_time", "08:00", "schedule", "定时执行时间（24小时制，多个用逗号分隔，如 08:00,18:00）"),
         ]
 
         for key, value, category, description in defaults:
@@ -126,9 +130,17 @@ async def lifespan(app: FastAPI):
     logger.info("✅ 数据库表结构已就绪。")
     seed_rss_sources_from_config()
     seed_system_config()
+
+    # 启动定时任务调度器
+    scheduler.start()
+    load_schedule_from_db()
+    logger.info("⏰ 定时任务调度器已启动。")
+
     yield
-    # 关闭时：清理资源（如需要）
-    logger.info("👋 应用已关闭。")
+
+    # 关闭时：停止调度器并清理资源
+    scheduler.shutdown(wait=False)
+    logger.info("👋 应用已关闭，调度器已停止。")
 
 
 app = FastAPI(

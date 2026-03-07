@@ -78,6 +78,16 @@ def update_settings(
             updated.append(key)
 
     db.commit()
+
+    # 如果更新了定时任务相关的配置，立即重新加载调度计划
+    schedule_keys = {"schedule_enabled", "schedule_time"}
+    if schedule_keys & set(updated):
+        try:
+            from scheduler import load_schedule_from_db
+            load_schedule_from_db()
+        except Exception as e:
+            logger.warning(f"⚠️ 重新加载定时任务配置失败: {e}")
+
     return {"message": f"成功更新 {len(updated)} 项配置", "updated_keys": updated}
 
 

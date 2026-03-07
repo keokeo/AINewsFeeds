@@ -134,6 +134,31 @@
       </el-form>
     </el-card>
 
+    <!-- 定时任务设置 -->
+    <el-card shadow="never" class="settings-card">
+      <template #header>
+        <div class="card-header">
+          <span>⏰ 定时任务设置</span>
+          <el-tag size="small" :type="scheduleEnabled ? 'success' : 'info'" effect="plain">
+            {{ scheduleEnabled ? '运行中' : '已关闭' }}
+          </el-tag>
+        </div>
+      </template>
+      <el-form label-width="160px" label-position="right">
+        <el-form-item label="启用定时采集">
+          <el-switch v-model="scheduleEnabled" active-text="启用" inactive-text="关闭" />
+        </el-form-item>
+        <el-form-item label="执行时间" v-show="scheduleEnabled">
+          <el-input
+            v-model="form.schedule_time"
+            placeholder="08:00"
+            style="max-width: 320px"
+          />
+          <div class="form-hint">24小时制，多个时间点用逗号分隔，如 08:00,18:00</div>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
     <!-- 保存按钮 -->
     <div class="save-bar">
       <el-button type="primary" size="large" :loading="saving" @click="handleSave">
@@ -168,6 +193,8 @@ const form = ref<Record<string, string>>({
   push_wechat_enabled: 'False',
   output_archive_dir: 'archive',
   output_filename_format: 'AINews_{timestamp}.md',
+  schedule_enabled: 'False',
+  schedule_time: '08:00',
 })
 
 // 数值型的 computed 双向绑定
@@ -198,6 +225,10 @@ const feishuEnabled = computed({
 const wechatEnabled = computed({
   get: () => form.value.push_wechat_enabled === 'True',
   set: (v: boolean) => { form.value.push_wechat_enabled = v ? 'True' : 'False' },
+})
+const scheduleEnabled = computed({
+  get: () => form.value.schedule_enabled === 'True',
+  set: (v: boolean) => { form.value.schedule_enabled = v ? 'True' : 'False' },
 })
 
 async function loadSettings() {
