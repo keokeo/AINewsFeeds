@@ -20,6 +20,12 @@ const router = createRouter({
                     component: () => import('@/views/dashboard/Index.vue'),
                     meta: { title: '任务监控', icon: 'Monitor' },
                 },
+                {
+                    path: '/settings',
+                    name: 'Settings',
+                    component: () => import('@/views/settings/Index.vue'),
+                    meta: { title: '系统设置', icon: 'Setting' },
+                },
             ],
         },
     ],

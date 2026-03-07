@@ -24,3 +24,18 @@ class RssSource(Base):
 
     def __repr__(self):
         return f"<RssSource(id={self.id}, name='{self.name}', active={self.is_active})>"
+
+
+class SystemConfig(Base):
+    """系统配置表（键值对存储）"""
+    __tablename__ = "system_config"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    key = Column(String(100), unique=True, nullable=False, index=True, comment="配置键名")
+    value = Column(Text, nullable=False, default="", comment="配置值")
+    category = Column(String(50), default="general", comment="配置分类（ai/fetch/push/general）")
+    description = Column(String(200), default="", comment="配置说明")
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), comment="更新时间")
+
+    def __repr__(self):
+        return f"<SystemConfig(key='{self.key}', value='{self.value[:30]}')>"

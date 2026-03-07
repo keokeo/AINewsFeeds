@@ -36,6 +36,29 @@
       </el-col>
     </el-row>
 
+    <!-- 手动触发采集按钮 -->
+    <el-card shadow="never" style="margin-top: 20px">
+      <template #header>
+        <div class="trigger-header">
+          <span>🚀 内容采集与生成</span>
+        </div>
+      </template>
+      <div class="trigger-area">
+        <p class="trigger-desc">
+          点击下方按钮，系统将自动从所有已启用的 RSS 源抓取最新新闻，并调用 AI 大模型生成多平台文案（公众号 + 小红书），生成结果将保存到本地存档目录。
+        </p>
+        <el-button
+          type="primary"
+          size="large"
+          :icon="Promotion"
+          :loading="collecting"
+          @click="handleTrigger"
+        >
+          {{ collecting ? '正在采集生成中...' : '手动触发采集生成' }}
+        </el-button>
+      </div>
+    </el-card>
+
     <el-card shadow="never" style="margin-top: 20px">
       <template #header>
         <span>📋 系统状态</span>
@@ -56,7 +79,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Promotion } from '@element-plus/icons-vue'
 import { fetchRssSources } from '@/api/rss'
+import { triggerCollection } from '@/api/tasks'
 import axios from 'axios'
 
 const stats = reactive({
@@ -66,6 +92,19 @@ const stats = reactive({
 })
 
 const backendOnline = ref(false)
+const collecting = ref(false)
+
+async function handleTrigger() {
+  collecting.value = true
+  try {
+    const res = await triggerCollection()
+    ElMessage.success(res.message || '采集生成任务已触发，请在后台日志中查看进度')
+  } catch {
+    // 错误已在拦截器中处理
+  } finally {
+    collecting.value = false
+  }
+}
 
 onMounted(async () => {
   try {
@@ -116,5 +155,25 @@ onMounted(async () => {
   font-size: 13px;
   color: #909399;
   margin-top: 2px;
+}
+
+.trigger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trigger-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.trigger-desc {
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
 }
 </style>
