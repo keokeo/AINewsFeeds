@@ -55,16 +55,36 @@ class NewsCollector:
     def fetch_rss_news(self) -> List[Dict]:
         """
         抓取 RSS 新闻源，过滤过去 hours_ago 小时内的新闻
+        目前改为从 SQLite 数据库获取启用的 RSS 源
         """
         news_items = []
-        rss_sources = self.config.get('rss_sources', [])
+        
+        # 从数据库中获取激活的 RSS 源
+        from database import SessionLocal
+        from models import RssSource
+        
+        db = SessionLocal()
+        try:
+            rss_sources = db.query(RssSource).filter(RssSource.is_active == True).all()
+            sources_list = [{"name": s.name, "url": s.url, "retry_times": s.retry_times} for s in rss_sources]
+        except Exception as e:
+            logger.error(f"❌ 从数据库读取 RSS 源失败: {e}")
+            sources_list = []
+        finally:
+            db.close()
+            
+        if not sources_list:
+            logger.warning("⚠️ 没有找到启用状态的 RSS 源，请检查数据库配置。")
+            return news_items
+
         fetch_config = self.config.get('fetch', {})
         hours_ago = fetch_config.get('hours_ago', 24)
         time_threshold = datetime.now() - timedelta(hours=hours_ago)
         
-        for source in rss_sources:
+        for source in sources_list:
             name = source.get('name', 'Unknown')
             url = source.get('url')
+            max_retries = source.get('retry_times', fetch_config.get('max_retries', 3))
             
             if not url:
                 logger.warning(f"⚠️ 跳过无效的 RSS 源: {name}")
@@ -72,9 +92,21 @@ class NewsCollector:
             
             logger.info(f"📡 正在拉取资讯: {name}...")
             
-            for attempt in range(fetch_config.get('max_retries', 3)):
+            for attempt in range(max_retries):
                 try:
-                    feed = feedparser.parse(url)
+                    # 改用 httpx 先请求内容，避免 feedparser 内置请求的超时问题
+                    response = httpx.get(
+                        url,
+                        timeout=fetch_config.get('timeout', 10),
+                        follow_redirects=True,
+                        headers={
+                            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                        }
+                    )
+                    response.raise_for_status()
+                    
+                    # 解析 RSS 内容
+                    feed = feedparser.parse(response.content)
                     
                     for entry in feed.entries:
                         pub_time = self._parse_publish_time(entry)
@@ -91,8 +123,8 @@ class NewsCollector:
                     break
                     
                 except Exception as e:
-                    logger.warning(f"⚠️ 抓取失败 {name} (尝试 {attempt + 1}/{fetch_config.get('max_retries', 3)}): {e}")
-                    if attempt < fetch_config.get('max_retries', 3) - 1:
+                    logger.warning(f"⚠️ 抓取失败 {name} (尝试 {attempt + 1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
                         time.sleep(2)  # 重试前等待
                     else:
                         logger.error(f"❌ 抓取失败 {name}: 已达到最大重试次数")
