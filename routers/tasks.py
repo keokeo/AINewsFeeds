@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/tasks", tags=["任务管理"])
 def _run_collection_task():
     """后台执行新闻采集 + AI 生成的完整流程"""
     try:
-        from news_collector_v2 import NewsCollector
+        from news_collector import NewsCollector
         collector = NewsCollector()
         collector.run()
     except Exception as e:
