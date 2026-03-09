@@ -11,3 +11,6 @@ uvicorn[standard]==0.30.0
 
 # 数据库
 sqlalchemy==2.0.35
+
+# 定时任务
+apscheduler==3.10.4

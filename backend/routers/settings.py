@@ -2,13 +2,16 @@
 系统配置管理路由
 提供 AI 参数、采集设置、推送设置的读取和修改 API
 """
+import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import Dict, Optional
 from pydantic import BaseModel
 
-from database import get_db
-from models import SystemConfig
+from backend.database import get_db
+from backend.models import SystemConfig
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/settings", tags=["系统配置"])
 
@@ -83,7 +86,7 @@ def update_settings(
     schedule_keys = {"schedule_enabled", "schedule_time"}
     if schedule_keys & set(updated):
         try:
-            from scheduler import load_schedule_from_db
+            from backend.scheduler import load_schedule_from_db
             load_schedule_from_db()
         except Exception as e:
             logger.warning(f"⚠️ 重新加载定时任务配置失败: {e}")

@@ -6,7 +6,6 @@ __pycache__/
 # Virtual environments
 venv/
 env/
-.env
 .venv
 pip-log.txt
 pip-delete-this-directory.txt
@@ -16,6 +15,7 @@ pip-delete-this-directory.txt
 
 # Application specific
 archive/
+backend/data/
 今日AI新闻文案*.md
 AI新闻自动同步系统_可行性报告.md
 
@@ -23,3 +23,7 @@ AI新闻自动同步系统_可行性报告.md
 .DS_Store
 .idea/
 .vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/

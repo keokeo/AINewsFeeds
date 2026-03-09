@@ -17,7 +17,7 @@ JOB_ID = "news_collection_job"
 def _run_collection_job():
     """执行新闻采集任务（同步，由 APScheduler 在线程池中调用）"""
     try:
-        from news_collector import NewsCollector
+        from backend.news_collector import NewsCollector
         logger.info("⏰ [定时任务] 开始执行自动新闻采集...")
         collector = NewsCollector()
         collector.run()
@@ -31,8 +31,8 @@ def load_schedule_from_db():
     从数据库中读取 schedule_enabled 和 schedule_time，
     动态注册或移除定时任务。
     """
-    from database import SessionLocal
-    from models import SystemConfig
+    from backend.database import SessionLocal
+    from backend.models import SystemConfig
 
     db = SessionLocal()
     try:

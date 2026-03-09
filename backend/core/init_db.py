@@ -1,26 +1,26 @@
 """
-AI 新闻自动采集与同步系统 - FastAPI 应用入口
+数据库初始化与种子数据导入
+从 config.yaml 和 .env 读取初始配置，仅在数据库表为空时执行。
 """
+import os
 import yaml
 import logging
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from database import engine, SessionLocal
-from models import Base, RssSource, SystemConfig
-from routers import rss, settings, tasks
-from scheduler import scheduler, load_schedule_from_db
 
 logger = logging.getLogger(__name__)
 
+# config.yaml 的默认路径（相对于 backend/ 目录）
+_BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_CONFIG_PATH = os.path.join(_BACKEND_DIR, "config.yaml")
 
-def seed_rss_sources_from_config(config_path: str = "config.yaml"):
+
+def seed_rss_sources(config_path: str = DEFAULT_CONFIG_PATH):
     """
     从 config.yaml 中读取 RSS 源配置，并将其导入到数据库中。
     仅在数据库表为空时执行（首次初始化）。
     """
+    from backend.database import SessionLocal
+    from backend.models import RssSource
+
     db = SessionLocal()
     try:
         existing_count = db.query(RssSource).count()
@@ -59,14 +59,16 @@ def seed_rss_sources_from_config(config_path: str = "config.yaml"):
         db.close()
 
 
-def seed_system_config(config_path: str = "config.yaml"):
+def seed_system_config(config_path: str = DEFAULT_CONFIG_PATH):
     """
     从 config.yaml 和 .env 中读取系统配置，并将其导入到数据库中。
     仅在数据库表为空时执行（首次初始化）。
     """
-    import os
     from dotenv import load_dotenv
     load_dotenv()
+
+    from backend.database import SessionLocal
+    from backend.models import SystemConfig
 
     db = SessionLocal()
     try:
@@ -120,63 +122,3 @@ def seed_system_config(config_path: str = "config.yaml"):
         db.rollback()
     finally:
         db.close()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """应用启动和关闭时的生命周期管理"""
-    # 启动时：创建数据库表 + 导入初始数据
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ 数据库表结构已就绪。")
-    seed_rss_sources_from_config()
-    seed_system_config()
-
-    # 启动定时任务调度器
-    scheduler.start()
-    load_schedule_from_db()
-    logger.info("⏰ 定时任务调度器已启动。")
-
-    yield
-
-    # 关闭时：停止调度器并清理资源
-    scheduler.shutdown(wait=False)
-    logger.info("👋 应用已关闭，调度器已停止。")
-
-
-app = FastAPI(
-    title="AI 新闻自动采集与同步系统",
-    description="提供 RSS 源管理、内容采集、AI 加工和多平台推送的一站式 API 服务",
-    version="1.1.0",
-    lifespan=lifespan,
-)
-
-# 配置 CORS 中间件（允许前端跨域调用）
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应限制为具体域名
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# 注册路由
-app.include_router(rss.router)
-app.include_router(settings.router)
-app.include_router(tasks.router)
-
-
-@app.get("/", tags=["系统"])
-def root():
-    """系统根路径，返回基本信息"""
-    return {
-        "system": "AI 新闻自动采集与同步系统",
-        "version": "1.1.0",
-        "docs": "/docs",
-        "status": "running",
-    }
-
-
-@app.get("/health", tags=["系统"])
-def health_check():
-    """健康检查接口"""
-    return {"status": "ok"}

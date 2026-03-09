@@ -83,7 +83,7 @@ import { ElMessage } from 'element-plus'
 import { Promotion } from '@element-plus/icons-vue'
 import { fetchRssSources } from '@/api/rss'
 import { triggerCollection } from '@/api/tasks'
-import axios from 'axios'
+import request from '@/utils/request'
 
 const stats = reactive({
   totalSources: 0,
@@ -115,8 +115,8 @@ onMounted(async () => {
   } catch { /* ignore */ }
 
   try {
-    const res = await axios.get('/api/../health')
-    backendOnline.value = res.data?.status === 'ok'
+    const res = await request.get<any, { status: string }>('/../health')
+    backendOnline.value = res?.status === 'ok'
   } catch {
     backendOnline.value = false
   }

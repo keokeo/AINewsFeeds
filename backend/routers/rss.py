@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from database import get_db
-from models import RssSource
-from schemas import RssSourceCreate, RssSourceUpdate, RssSourceResponse
+from backend.database import get_db
+from backend.models import RssSource
+from backend.schemas import RssSourceCreate, RssSourceUpdate, RssSourceResponse
 
 router = APIRouter(prefix="/api/rss", tags=["RSS 源管理"])
 
