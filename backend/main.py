@@ -76,6 +76,7 @@ def root():
 
 
 @app.get("/health", tags=["系统"])
+@app.get("/api/health", tags=["系统"])
 def health_check():
     """健康检查接口"""
     return {"status": "ok"}

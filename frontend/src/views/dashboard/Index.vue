@@ -115,7 +115,7 @@ onMounted(async () => {
   } catch { /* ignore */ }
 
   try {
-    const res = await request.get<any, { status: string }>('/../health')
+    const res = await request.get<any, { status: string }>('/health')
     backendOnline.value = res?.status === 'ok'
   } catch {
     backendOnline.value = false
