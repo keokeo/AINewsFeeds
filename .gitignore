@@ -16,8 +16,7 @@ pip-delete-this-directory.txt
 # Application specific
 archive/
 backend/data/
-今日AI新闻文案*.md
-AI新闻自动同步系统_可行性报告.md
+product/
 
 # IDE / OS
 .DS_Store
